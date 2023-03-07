@@ -29,15 +29,20 @@ class CollegeEnv(gym.Env):
         # action is accepting or rejecting the student application
         self.action_space = gym.spaces.MultiBinary(n)
 
-    def reset(self):
+    def reset(self, n):
         # obs = ((0.1, 0.2, 0.3), 0, 0.0)  # initial observation
         self.rng = default.rng
-	
-	    for _ in range(n)
-	        Student = np.array[(self.rng * self.max_Test_Score), (self.rng * self.max_Label), (self.rng * self.max_Income)]
-	
-	    return np.array{Self.Students}
-        # return obs
+        # For each tuple, regenerate its test score via a Gaussian Dist.
+        # Keep their group unchanged
+        # regenerate their income using two separate income Gaussian Dist. 
+        for _ in range(n):
+            Student = np.array[(self.rng * self.max_Test_Score), 
+                            (self.rng * self.max_Label), 
+                            (self.rng * self.max_Income)]
+        # Reset ep_steps 
+        self.done = False
+        # Return the initial Observation
+        return
 
     def step(self, action):
         # TODO
