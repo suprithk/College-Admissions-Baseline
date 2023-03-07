@@ -34,9 +34,11 @@ class CollegeEnv(gym.Env):
         self.rng = default.rng
 	
 	    for _ in range(n)
-	        Student = np.array[(self.rng * self.max_Test_Score), (self.rng * self.max_Label), (self.rng * self.max_Income)]
+	        Student = np.array[(self.rng * self.max_Test_Score), 
+                            (self.rng * self.max_Label), 
+                            (self.rng * self.max_Income)]
 	
-	    return np.array{self.Students}
+	    return np.array[self.Students]
         # return obs
 
     def step(self, action):
