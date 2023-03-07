@@ -30,8 +30,14 @@ class CollegeEnv(gym.Env):
         self.action_space = gym.spaces.MultiBinary(n)
 
     def reset(self):
-        obs = ((0.1, 0.2, 0.3), 0, 0.0)  # initial observation
-        return obs
+        # obs = ((0.1, 0.2, 0.3), 0, 0.0)  # initial observation
+        self.rng = default.rng
+	
+	    for _ in range(n)
+	        Student = np.array[(self.rng * self.max_Test_Score), (self.rng * self.max_Label), (self.rng * self.max_Income)]
+	
+	    return np.array{Self.Students}
+        # return obs
 
     def step(self, action):
         # TODO
