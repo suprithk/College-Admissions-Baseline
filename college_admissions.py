@@ -7,27 +7,25 @@ class CollegeEnv(gym.Env):
 
     EP_LENGTH = 100
 
-    current_step = 0
-
-    def __init__(self, n = 10):
+    def __init__(self):
         self.observation_space = gym.spaces.Tuple([
-            gym.spaces.Tuple([
-                # continuous score from 0 to 4
-                gym.spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
-                # discrete label associated with advantage - 0,1
-                gym.spaces.Discrete(2),
-                # income of each student ranging from 0 to 1
-                gym.spaces.Box(low=0, high=10_000_000, shape=(1,), dtype=np.float32)
-            ])
-            for _ in range(n)
+            # continuous score from 0 to 4
+            gym.spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
+            # discrete label associated with advantage - 0,1
+            gym.spaces.Discrete(2),
+            # income of each student ranging from 0 to 10 mil
+            gym.spaces.Box(low=0, high=10_000_000, shape=(1,), dtype=np.float32),
+            # threshold for admission
+            gym.spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32)
         ])
         self.done = False
         self.current_step = 0
-        # TODO
-        # incorporate threshold 
+
+        # Initialize previous observation
+        self.prev_obs = None
 
         # action is accepting or rejecting the student application
-        self.action_space = gym.spaces.MultiBinary(n)
+        self.action_space = gym.spaces.Discrete(2)
 
     def reset(self, n):
         # obs = ((0.1, 0.2, 0.3), 0, 0.0)  # initial observation
@@ -41,6 +39,7 @@ class CollegeEnv(gym.Env):
                             (self.rng * self.max_Income)]
         # Reset ep_steps 
         self.done = False
+        # self.prev_obs = obs # initial obs
         # Return the initial Observation
         return
 
@@ -50,17 +49,22 @@ class CollegeEnv(gym.Env):
         # reward is sum of all accepted scores
         # run through all students and calculate the sum
 
-        self.done = self.current_step == self.EP_LENGTH
+        
         obs = ((0.2, 0.4, 0.6), (0.3, 0.2, 0.5), (0.2, 0.4, 0.6))  # new observation
-        reward = self.get_reward(action)  # reward
+        reward = self.get_reward(action, obs)  # reward
         done = False  # termination flag
         info = {}  # optional info
+        self.prev_obs = obs
         return obs, reward, done, info
 
-    def get_reward(self, action):
-        # TODO
-        # take action
-        print("lol")
+    def get_reward(self, action, obs):
+        # Do nothing if rejected
+        if (self.action_space != 0):
+            diff = obs[3] - self.prev_obs[3] # change in threshold
+            if (diff > 0):
+                return 1 * obs[3] 
+            elif (diff < 0):
+                return -1 * obs[3]
 
     def get_new_income(self, action):
         # TODO
@@ -70,8 +74,5 @@ class CollegeEnv(gym.Env):
 
 
 # TODO
-# 1. Agent does not have control over threshold, just who it can accept
 # 2. How to code the logic for manipulating scores
-# 3. Income function
-# 4. How do you give rewards based on observation
 # 5. Fairness equation
