@@ -1,11 +1,16 @@
 import gym
 import numpy as np
+from students import *
 
 class CollegeEnv(gym.Env):
 
     NUM_STEPS = 10_000
 
     EP_LENGTH = 100
+
+    scores_sum = 0
+
+    student_count = 0
 
     def __init__(self):
         self.observation_space = gym.spaces.Tuple([
@@ -48,9 +53,11 @@ class CollegeEnv(gym.Env):
         # regenerate scores, keep the same label, change income based on income func
         # reward is sum of all accepted scores
         # run through all students and calculate the sum
-
-        
-        obs = ((0.2, 0.4, 0.6), (0.3, 0.2, 0.5), (0.2, 0.4, 0.6))  # new observation
+        threshold = self.threshold(obs, action)
+        if (obs[1] == 0):
+            obs = (sample_gpa(), 1, sample_advantaged(), threshold)
+        else:
+            obs =  (sample_gpa(), 0, sample_disadvantaged(), threshold)
         reward = self.get_reward(action, obs)  # reward
         done = False  # termination flag
         info = {}  # optional info
@@ -72,7 +79,17 @@ class CollegeEnv(gym.Env):
         # can be done by checking if an rng falls below a threshold
         print("lol")
 
+    def threshold(self, obs):
+        global scores_sum
+        global student_count
+        if (self.action_space == 1):
+            scores_sum += obs[0]
+            student_count += 1
+            return scores_sum/student_count
+        else:
+            return obs[3]
 
 # TODO
-# 2. How to code the logic for manipulating scores
-# 5. Fairness equation
+# 1. How to code the logic for manipulating scores
+# 2. Reset function for initial obs
+# 3. main.py
