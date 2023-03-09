@@ -73,12 +73,6 @@ class CollegeEnv(gym.Env):
             elif (diff < 0):
                 return -1 * obs[3]
 
-    def get_new_income(self, action):
-        # TODO
-        # calculate income based on a probability
-        # can be done by checking if an rng falls below a threshold
-        print("lol")
-
     def threshold(self, obs):
         global scores_sum
         global student_count
@@ -89,6 +83,8 @@ class CollegeEnv(gym.Env):
         else:
             return obs[3]
 
+    def render(self, mode='human'):
+        pass
 # TODO
 # 1. How to code the logic for manipulating scores
 # 2. Reset function for initial obs
