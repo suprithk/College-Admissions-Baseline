@@ -76,7 +76,9 @@ class CollegeEnv(gym.Env):
 
     def render(self, mode='human'):
         pass
-# TODO
+   
+# TOD
 # 1. How to code the logic for manipulating scores
 # 2. Reset function for initial obs
 # 3. main.py
+# 3.1 eval, train, and tensorboard callbacks 
