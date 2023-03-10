@@ -32,21 +32,16 @@ class CollegeEnv(gym.Env):
         # action is accepting or rejecting the student application
         self.action_space = gym.spaces.Discrete(2)
 
-    def reset(self, n):
-        # obs = ((0.1, 0.2, 0.3), 0, 0.0)  # initial observation
-        self.rng = default.rng
+    def reset(self):
         # For each tuple, regenerate its test score via a Gaussian Dist.
         # Keep their group unchanged
         # regenerate their income using two separate income Gaussian Dist. 
-        for _ in range(n):
-            Student = np.array[(self.rng * self.max_Test_Score), 
-                            (self.rng * self.max_Label), 
-                            (self.rng * self.max_Income)]
+        initialThreshold = 3.0
+        obs = (sample_gpa(), 1, sample_advantaged(), initialThreshold)
         # Reset ep_steps 
         self.done = False
-        # self.prev_obs = obs # initial obs
         # Return the initial Observation
-        return
+        return obs
 
     def step(self, action):
         threshold = self.threshold(obs, action)
