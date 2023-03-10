@@ -44,10 +44,6 @@ class CollegeEnv(gym.Env):
         return obs
 
     def step(self, action):
-        # TODO
-        # regenerate scores, keep the same label, change income based on income func
-        # reward is sum of all accepted scores
-        # run through all students and calculate the sum
         threshold = self.threshold(obs, action)
         if (obs[1] == 0):
             obs = (sample_gpa(), 1, sample_advantaged(), threshold)
@@ -76,7 +72,7 @@ class CollegeEnv(gym.Env):
             student_count += 1
             return scores_sum/student_count
         else:
-            return obs[3]
+            return obs[3] # keep same threshold
 
     def render(self, mode='human'):
         pass
