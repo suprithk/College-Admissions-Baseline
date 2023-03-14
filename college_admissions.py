@@ -36,40 +36,49 @@ class CollegeEnv(gym.Env):
         # For each tuple, regenerate its test score via a Gaussian Dist.
         # Keep their group unchanged
         # regenerate their income using two separate income Gaussian Dist. 
-        initialThreshold = 3.0
+        initialThreshold = [3.0,]
         obs = {
             'gpa' : sample_gpa(),
             'label' : 1,
-            'income' : sample_advantaged(),
+            'income' : [sample_advantaged(),],
             'threshold' : initialThreshold
         }
         # Reset ep_steps 
         self.done = False
         # Return the initial Observation
+
+        # Initialize previous observation
+        self.prev_obs = obs
+
         return obs
 
     def step(self, action):
-        threshold = self.threshold(obs, action)
+        obs = self.observation_space
+        threshold = self.threshold()
         if (obs['label'] == 0):
-            obs = (sample_gpa(), 1, sample_advantaged(), threshold)
+            obs = (sample_gpa(), 1, [sample_advantaged(),], [threshold,])
         else:
-            obs =  (sample_gpa(), 0, sample_disadvantaged(), threshold)
-        reward = self.get_reward(action, obs)  # reward
+            obs =  (sample_gpa(), 0, [sample_disadvantaged(),], [threshold,])
+        reward = self.get_reward(action)  # reward
         done = False  # termination flag
         info = {}  # optional info
         self.prev_obs = obs
         return obs, reward, done, info
 
-    def get_reward(self, action, obs):
+    def get_reward(self, action):
+        obs = self.observation_space
         # Do nothing if rejected
         if (self.action_space != 0):
-            diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
+            diff = obs['threshold'][0] - self.prev_obs['threshold'][0] # change in threshold
             if (diff > 0):
-                return 1 * obs['threshold'] 
+                return 1 * obs['threshold'][0]
             elif (diff < 0):
-                return -1 * obs['threshold']
+                return -1 * obs['threshold'][0]
+            else:
+                return 0
 
-    def threshold(self, obs):
+    def threshold(self):
+        obs = self.observation_space
         global scores_sum
         global student_count
         if (self.action_space == 1):
@@ -77,7 +86,7 @@ class CollegeEnv(gym.Env):
             student_count += 1
             return scores_sum/student_count
         else:
-            return obs['threshold'] # keep same threshold
+            return obs['threshold'][0] # keep same threshold
 
     def render(self, mode='human'):
         pass
