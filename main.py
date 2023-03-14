@@ -38,11 +38,15 @@ def evaluate(model, num_episodes):
 
 
 def main():
+    print("LESS GOOO")
     env = CollegeEnv()
     check_env(env, warn=True)
 
-    model = train(NUM_TIMESTEPS, 'CollegeEnv')
+    model = train(NUM_TIMESTEPS, "CollegeEnv")
     evaluate(model, NUM_EPISODES)
+
+if __name__ == "__main__":
+    main()
 
 
 # def evaluate(env, agent, num_eps, num_timesteps, name, seeds, eval_path, algorithm=None):
