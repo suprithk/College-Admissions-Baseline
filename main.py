@@ -13,9 +13,8 @@ from college_admissions import *
 NUM_TIMESTEPS = 200
 NUM_EPISODES = 10_000
 
-def train(train_timesteps, env_name):
-    env = gym.make(env_name)
-    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./runs")
+def train(train_timesteps, env):
+    model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs")
     model.learn(train_timesteps, tb_log_name="first run")
     return model
 
@@ -40,9 +39,9 @@ def evaluate(model, num_episodes):
 def main():
     print("LESS GOOO")
     env = CollegeEnv()
-    check_env(env, warn=True)
+    # check_env(env, warn=True)
 
-    model = train(NUM_TIMESTEPS, "CollegeEnv")
+    model = train(NUM_TIMESTEPS, env)
     evaluate(model, NUM_EPISODES)
 
 if __name__ == "__main__":

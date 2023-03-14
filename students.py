@@ -1,6 +1,7 @@
 import gym
 import scipy.stats 
 from scipy.stats import norm
+from scipy.stats import truncnorm
 
 d_mu = 70_000
 a_mu = 150_000
@@ -31,7 +32,9 @@ def sample_advantaged():
 def sample_gpa():
   gpa_mu = 3.00
   gpa_sigma = 0.40
-  gpa_gaussian = norm(gpa_mu, gpa_sigma)
+  min, max = 0, 4
+  gpa_gaussian = truncnorm((min - gpa_mu) / gpa_sigma, (max - gpa_mu) / gpa_sigma, 
+                           loc=gpa_mu, scale=gpa_sigma)
   
   # Generate a single gpa data point
   return gpa_gaussian.rvs()
