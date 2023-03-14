@@ -58,13 +58,12 @@ def increase_a_mu():
   a_mu = a_mu * 1.05
 
 def manipulate_gpa(unmanipulated_gpa, income, threshold):
-	global manipulated_gpa
-manipulated_gpa = unmanipulated_gpa + .3
-  
-if(manipulated_gpa >= threshold):
-  unmanipulated_gpa = manipulated_gpa
+    global manipulated_gpa
+    manipulated_gpa = unmanipulated_gpa + .3
+    if(manipulated_gpa >= threshold):
+        unmanipulated_gpa = manipulated_gpa
 
-return manipulated_gpa
+    return manipulated_gpa
 	# How does income affect the gpa increase?
 	# What is the role of income in this function?
 	# If we’re increasing or decreasing income in any way
