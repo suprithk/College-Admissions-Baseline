@@ -59,7 +59,10 @@ def increase_a_mu():
 
 def manipulate_gpa(unmanipulated_gpa, income, threshold):
     global manipulated_gpa
-    manipulated_gpa = unmanipulated_gpa + .3
+    global arbitrary_increase 
+    arbitrary_increase = .3
+    manipulated_gpa = unmanipulated_gpa + arbitrary_increase
+
     if(manipulated_gpa >= threshold):
         unmanipulated_gpa = manipulated_gpa
 
