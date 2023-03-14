@@ -81,4 +81,4 @@ class CollegeEnv(gym.Env):
 # 1. How to code the logic for manipulating scores
 # 2. Reset function for initial obs
 # 3. main.py
-# 3.1 eval, train, and tensorboard callbacks 
+# 3.1 tensorboard callbacks 
