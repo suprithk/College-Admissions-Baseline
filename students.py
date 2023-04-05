@@ -68,4 +68,5 @@ def manipulate_gpa(unmanipulated_gpa, income, threshold):
 
     return manipulated_gpa
 	# How does income affect the gpa increase?
-	# Should we increase or decrease income in any way?
+	# What is the role of income in this function?
+	# If we’re increasing or decreasing income in any way
