@@ -52,23 +52,31 @@ class CollegeEnv(gym.Env):
 
         return obs
 
-    def step(self, action):
-        obs = self.observation_space
-        threshold = self.threshold()
+    def step(self, action, obs):
+        threshold = self.threshold(action, obs)
         if (obs['label'] == 0):
-            obs = (sample_gpa(), 1, [sample_advantaged(),], [threshold,])
+            obs = {
+            'gpa' : sample_gpa(),
+            'label' : 1,
+            'income' : np.array(sample_advantaged()),
+            'threshold' : np.array(threshold)
+            }
         else:
-            obs =  (sample_gpa(), 0, [sample_disadvantaged(),], [threshold,])
-        reward = self.get_reward(action)  # reward
+            obs = {
+            'gpa' : sample_gpa(),
+            'label' : 0,
+            'income' : np.array(sample_disadvantaged()),
+            'threshold' : np.array(threshold)
+            }
+        reward = self.get_reward(action, obs)  # reward
         done = False  # termination flag
         info = {}  # optional info
         self.prev_obs = obs
         return obs, reward, done, info
 
-    def get_reward(self, action):
-        obs = self.observation_space
+    def get_reward(self, action, obs):
         # Do nothing if rejected
-        if (self.action_space != 0):
+        if (action != 0):
             diff = obs['threshold'][0] - self.prev_obs['threshold'][0] # change in threshold
             if (diff > 0):
                 return 1 * obs['threshold'][0]
@@ -77,11 +85,10 @@ class CollegeEnv(gym.Env):
             else:
                 return 0
 
-    def threshold(self):
-        obs = self.observation_space
+    def threshold(self, action, obs):
         global scores_sum
         global student_count
-        if (self.action_space == 1):
+        if (action == 1):
             scores_sum += obs['gpa']
             student_count += 1
             return scores_sum/student_count
