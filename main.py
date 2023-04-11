@@ -27,7 +27,7 @@ def evaluate(model, num_episodes):
         obs = env.reset()
         while not done:
             action, _states = model.predict(obs)
-            obs, reward, done, info = env.step(action)
+            obs, reward, done, info = env.step(action, obs)
             episode_rewards.append(reward)
 
         all_rewards.append(sum(episode_rewards))
