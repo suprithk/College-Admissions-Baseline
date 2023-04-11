@@ -15,7 +15,7 @@ class CollegeEnv(gym.Env):
     def __init__(self):
         self.observation_space = gym.spaces.Dict({
             # continuous score from 0 to 4
-            'gpa' : gym.spaces.Box(low=0, high=4, shape=(1,), dtype=np.float32),
+            'gpa' : gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
             # discrete label associated with advantage - 0,1
             'label' : gym.spaces.Discrete(2),
             # income of each student ranging from 0 to 10 mil
@@ -36,11 +36,13 @@ class CollegeEnv(gym.Env):
         # For each tuple, regenerate its test score via a Gaussian Dist.
         # Keep their group unchanged
         # regenerate their income using two separate income Gaussian Dist. 
-        initialThreshold = [3.0,]
+        initialThreshold = [.8,]
+        temp_income = advantaged_income()
+
         obs = {
-            'gpa' : sample_gpa(),
+            'gpa' : get_manipulated_gpa(temp_income, initialThreshold[0]),
             'label' : 1,
-            'income' : [sample_advantaged(),],
+            'income' : [temp_income,],
             'threshold' : initialThreshold
         }
         # Reset ep_steps 
@@ -58,14 +60,14 @@ class CollegeEnv(gym.Env):
             obs = {
             'gpa' : sample_gpa(),
             'label' : 1,
-            'income' : np.array(sample_advantaged()),
+            'income' : np.array(advantaged_income()),
             'threshold' : np.array(threshold)
             }
         else:
             obs = {
             'gpa' : sample_gpa(),
             'label' : 0,
-            'income' : np.array(sample_disadvantaged()),
+            'income' : np.array(disadvantaged_income()),
             'threshold' : np.array(threshold)
             }
         reward = self.get_reward(action, obs)  # reward
@@ -99,9 +101,6 @@ class CollegeEnv(gym.Env):
         pass
    
 # TOD
-# 1. How to code the logic for manipulating scores
-# 2. Reset function for initial obs
-# 3. main.py
-# 3.1 tensorboard callbacks 
-# bruh
-# bruh 
+# 1. Get code to run 
+# 2.1 tensorboard callbacks 
+# 2.2 Measure fairness metric 
