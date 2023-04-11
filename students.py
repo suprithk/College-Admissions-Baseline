@@ -2,8 +2,9 @@ import gym
 import scipy.stats 
 from scipy.stats import norm
 from scipy.stats import truncnorm
+import numpy as np
 
-d_mu = 70_000
+d_mu = 50_000
 a_mu = 150_000
 # This file includes 3 core distribution used in the sampling
 # of students. 
@@ -13,26 +14,29 @@ a_mu = 150_000
 
 
 # Create a Gaussian distribution for Disadvantaged student family incomes
-def sample_disadvantaged():
+def disadvantaged_income():
   D_sigma = 10_000
-  D_gaussian = norm(d_mu, D_sigma)
-
+  min, max = 0, 10_000_000
+  D_gaussian = truncnorm((min - d_mu) / D_sigma, (max - d_mu) / D_sigma, 
+                         loc=d_mu, scale=D_sigma)
   # Generate a single data point
+
   return D_gaussian.rvs()
 
 # Create a Gaussian distribution for Advantaged student family incomes
-def sample_advantaged():
+def advantaged_income():
   A_sigma = 10_000
-  A_gaussian = norm(a_mu, A_sigma)
-
+  min, max = 0, 10_000_000
+  A_gaussian = truncnorm((min - a_mu) / A_sigma, (max - a_mu) / A_sigma, 
+                         loc=a_mu, scale=A_sigma)
   # Generate a single data point
   return A_gaussian.rvs()
 
 # Create a Gaussian distribution for student GPA
 def sample_gpa():
-  gpa_mu = 3.00
-  gpa_sigma = 0.40
-  min, max = 0, 4
+  gpa_mu = .70
+  gpa_sigma = 0.1
+  min, max = 0, 1
   gpa_gaussian = truncnorm((min - gpa_mu) / gpa_sigma, (max - gpa_mu) / gpa_sigma, 
                            loc=gpa_mu, scale=gpa_sigma)
   
@@ -57,16 +61,15 @@ def increase_a_mu():
   global a_mu
   a_mu = a_mu * 1.05
 
-def manipulate_gpa(unmanipulated_gpa, income, threshold):
-    global manipulated_gpa
-    global arbitrary_increase 
-    arbitrary_increase = .3
-    manipulated_gpa = unmanipulated_gpa + arbitrary_increase
-
-    if(manipulated_gpa >= threshold):
-        unmanipulated_gpa = manipulated_gpa
-
-    return manipulated_gpa
-	# How does income affect the gpa increase?
-	# What is the role of income in this function?
-	# If we’re increasing or decreasing income in any way
+def get_manipulated_gpa(income, threshold):
+    
+    unmanipulated_gpa = sample_gpa()
+    gpa_increase = np.log10(income) / 40
+    manipulated_gpa = unmanipulated_gpa + gpa_increase
+    if (manipulated_gpa >= threshold):
+      if (manipulated_gpa > 1):
+        return 1
+      else:
+        return manipulated_gpa
+    else:
+      return unmanipulated_gpa
