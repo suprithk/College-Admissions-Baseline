@@ -57,17 +57,19 @@ class CollegeEnv(gym.Env):
     def step(self, action, obs):
         threshold = self.threshold(action, obs)
         if (obs['label'] == 0):
+            income_temp = advantaged_income()
             obs = {
-            'gpa' : sample_gpa(),
+            'gpa' : get_manipulated_gpa(income_temp, threshold),
             'label' : 1,
-            'income' : np.array(advantaged_income()),
+            'income' : np.array(income_temp),
             'threshold' : np.array(threshold)
             }
         else:
+            income_temp = disadvantaged_income()
             obs = {
-            'gpa' : sample_gpa(),
+            'gpa' : get_manipulated_gpa(income_temp, threshold),
             'label' : 0,
-            'income' : np.array(disadvantaged_income()),
+            'income' : np.array(income_temp),
             'threshold' : np.array(threshold)
             }
         reward = self.get_reward(action, obs)  # reward
