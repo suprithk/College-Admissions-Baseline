@@ -1,5 +1,5 @@
 import numpy as np
-import torch
+# import torch
 import os
 import tqdm
 import gym
