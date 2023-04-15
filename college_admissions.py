@@ -1,19 +1,14 @@
-# How should our income and threshold be initialized in reset ?
-# Ask about our nan error 
-
 import gym
 import numpy as np
 from students import *
 
-global curr_timestep
-curr_timestep = 0
 import main
 
 class CollegeEnv(gym.Env):
 
-    NUM_STEPS = 10_000
+    NUM_STEPS = 10_000 # unused
 
-    EP_LENGTH = 100
+    EP_LENGTH = 100 # unused
 
     global scores_sum
     scores_sum = 0
@@ -42,9 +37,7 @@ class CollegeEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(2)
 
     def reset(self):
-        # For each tuple, regenerate its test score via a Gaussian Dist.
-        # Keep their group unchanged
-        # regenerate their income using two separate income Gaussian Dist. 
+        # Reset the environment and give obs an advantaged applicant
         initialThreshold = .8
         temp_income = advantaged_income()
 
@@ -56,13 +49,19 @@ class CollegeEnv(gym.Env):
         }
         # Reset ep_steps 
         self.done = False
-        # Return the initial Observation
+        self.current_step = 0
 
         # Initialize previous observation
         self.prev_obs = obs
+
+        # Return the initial Observation
         return obs
 
     def step(self, action):
+        # increment timestep
+        self.current_step += 1
+
+        # Get new obs
         threshold = self.threshold(action)
         if (self.prev_obs['label'] == 0):
             income_temp = advantaged_income()
@@ -80,35 +79,25 @@ class CollegeEnv(gym.Env):
             'income' : np.array(income_temp),
             'threshold' : np.array(threshold)
             }
-        reward = self.get_reward(action, obs)  # reward
 
-        global curr_timestep
-        # Check if done with episode
-        if (curr_timestep == 200):   ############ <------------ CHANGE THIS 
-            done = True
-        else:
-            done = False
+        reward = self.get_reward(action, obs)
+        done = False # there is no end case for this env
         info = {}  # optional info
-        self.prev_obs = obs
-
-        #increment timestep
-        curr_timestep += 1
-
+        self.prev_obs = obs # update prev_obs
+        
         return obs, reward, done, info
 
     def get_reward(self, action, obs):
-        # Do nothing if rejected
+        # 1: acceptance -> return the threshold + inc/dec
+        # 0: rejection -> do nothing 
         if (action != 0):
             diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
-            # if (diff > 0):
-            #     return obs['threshold'] + diff
-            # elif (diff < 0):
-            #     return obs['threshold'] + diff
             return obs['threshold'] + diff
         else:
             return 0
 
     def threshold(self, action):
+        # return the average attendee score
         global scores_sum
         global student_count
         if (action == 1):
@@ -120,8 +109,3 @@ class CollegeEnv(gym.Env):
 
     def render(self, mode='human'):
         pass
-   
-# TOD
-# 1. Get code to run 
-# 2.1 tensorboard callbacks 
-# 2.2 Measure fairness metric 
