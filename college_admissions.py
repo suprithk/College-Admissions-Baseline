@@ -3,13 +3,12 @@ import numpy as np
 from students import *
 
 import main
+NUM_STEPS = 10_000 # unused
+
+EP_LENGTH = 1000
 
 class CollegeEnv(gym.Env):
-
-    NUM_STEPS = 10_000 # unused
-
-    EP_LENGTH = 100 # unused
-
+ 
     global scores_sum
     scores_sum = 0
 
@@ -18,14 +17,14 @@ class CollegeEnv(gym.Env):
 
     def __init__(self):
         self.observation_space = gym.spaces.Dict({
-            # continuous score from 0 to 4
-            'gpa' : gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32),
+            # continuous score from 0 to 1
+            'gpa' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32),
             # discrete label associated with advantage - 0,1
             'label' : gym.spaces.Discrete(2),
             # income of each student ranging from 0 to 10 mil
-            'income' : gym.spaces.Box(low=0, high=10_000_000, shape=(1,), dtype=np.float32),
+            'income' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([10_000_000], dtype=np.float32), shape=(1,), dtype=np.float32),
             # threshold for admission
-            'threshold' : gym.spaces.Box(low=0, high=1, shape=(1,), dtype=np.float32)
+            'threshold' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32)
         })
         self.done = False
         self.current_step = 0
@@ -42,10 +41,10 @@ class CollegeEnv(gym.Env):
         temp_income = advantaged_income()
 
         obs = {
-            'gpa' : get_manipulated_gpa(temp_income, initialThreshold),
+            'gpa' : np.array([get_manipulated_gpa(temp_income, initialThreshold)], dtype=np.float32),
             'label' : 1,
-            'income' : np.array(temp_income),
-            'threshold' : np.array(initialThreshold)
+            'income' : np.array([temp_income], dtype=np.float32),
+            'threshold' : np.array([initialThreshold], dtype=np.float32)
         }
         # Reset ep_steps 
         self.done = False
@@ -66,22 +65,27 @@ class CollegeEnv(gym.Env):
         if (self.prev_obs['label'] == 0):
             income_temp = advantaged_income()
             obs = {
-            'gpa' : get_manipulated_gpa(income_temp, threshold),
+            'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
             'label' : 1,
-            'income' : np.array(income_temp),
-            'threshold' : np.array(threshold)
+            'income' : np.array([income_temp], dtype=np.float32),
+            'threshold' : np.array(threshold, dtype=np.float32)
             }
         else:
             income_temp = disadvantaged_income()
             obs = {
-            'gpa' : get_manipulated_gpa(income_temp, threshold),
+            'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
             'label' : 0,
-            'income' : np.array(income_temp),
-            'threshold' : np.array(threshold)
+            'income' : np.array([income_temp], dtype=np.float32),
+            'threshold' : np.array(threshold, dtype=np.float32)
             }
 
-        reward = self.get_reward(action, obs)
-        done = False # there is no end case for this env
+        reward = float(self.get_reward(action, obs))
+
+        if (self.current_step == EP_LENGTH):
+            done = True
+        else:
+            done = False 
+
         info = {}  # optional info
         self.prev_obs = obs # update prev_obs
         
@@ -92,7 +96,7 @@ class CollegeEnv(gym.Env):
         # 0: rejection -> do nothing 
         if (action != 0):
             diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
-            return obs['threshold'] + diff
+            return obs['threshold'] + (diff * obs['threshold'])
         else:
             return 0
 

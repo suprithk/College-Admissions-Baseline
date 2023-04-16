@@ -1,5 +1,4 @@
-# TO-DO
-# 2. Tensorboard training graphing
+# TO DO
 # 3. Track and graph  fairness metric 
 
 
@@ -13,31 +12,40 @@ import gym
 from stable_baselines3 import PPO
 from stable_baselines3.ppo.policies import MlpPolicy
 from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv
+
 from stable_baselines3.common.callbacks import CheckpointCallback
 
 from college_admissions import *
 
 
 # TRAIN CONSTANTS
-TRAIN_TIMESTEPS = 10_000
+TRAIN_TIMESTEPS = 50_000
 
 SAVE_FREQ = TRAIN_TIMESTEPS / 2
 SAVE_DIR = './models/'
 
+# EXP_DIR = './experiments/ppo/'
+
 # EVALUATE CONSTANTS
 NUM_EPISODES = 10
-EPISODE_TIMESTEPS = 100
+EPISODE_TIMESTEPS = 1000
 
 
 global curr_timestep
 curr_timestep = 0
 
-# this is where we use tensorboard to plot reward vs timestep how ??
 def train(train_timesteps, env):
-    model = PPO('MultiInputPolicy', env, verbose=1) # tensorboard_log="./runs")
+
+    env = Monitor(env)
+    env = DummyVecEnv([lambda: env])
+
+    model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
 
     checkpoint_callback = CheckpointCallback(save_freq=SAVE_FREQ, save_path=SAVE_DIR, name_prefix='ppo_model')
-    model.learn(train_timesteps, callback=checkpoint_callback) #tb_log_name="first run")
+
+    model.learn(train_timesteps, callback=checkpoint_callback, tb_log_name="first run")
     model.save(SAVE_DIR + '/final_model')
     return model
 
@@ -73,7 +81,8 @@ def evaluate(model, num_episodes, episode_timesteps):
 def main():
     print("LESS GOOO")
     env = CollegeEnv()
-    # check_env(env, warn=True)
+
+    check_env(env, warn=True)
 
     print("############################## Training PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)
