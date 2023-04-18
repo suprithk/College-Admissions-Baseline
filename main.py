@@ -1,5 +1,7 @@
 # TO DO
-# 3. Track and graph  fairness metric 
+# 4. Finally, tweek environment (change reward, fairness metric, etc)
+# Tweek get manipulated_gpa to make it harder for low income to increase gpa
+# Tweek reward to really emphasize higher threshold
 
 
 
@@ -8,6 +10,9 @@ import torch
 import os
 import tqdm
 import gym
+import os
+import sys
+import shutil
 
 from stable_baselines3 import PPO
 from stable_baselines3.ppo.policies import MlpPolicy
@@ -17,20 +22,12 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 from stable_baselines3.common.callbacks import CheckpointCallback
 
+from torch.utils.tensorboard import SummaryWriter
+writer = SummaryWriter()
+
+from config import *
 from college_admissions import *
-
-
-# TRAIN CONSTANTS
-TRAIN_TIMESTEPS = 50_000
-
-SAVE_FREQ = TRAIN_TIMESTEPS / 2
-SAVE_DIR = './models/'
-
-# EXP_DIR = './experiments/ppo/'
-
-# EVALUATE CONSTANTS
-NUM_EPISODES = 10
-EPISODE_TIMESTEPS = 1000
+from students import *
 
 
 global curr_timestep
@@ -50,12 +47,18 @@ def train(train_timesteps, env):
     return model
 
 
-# analyze reward and fairness
+
 def evaluate(model, num_episodes, episode_timesteps):
     global curr_timestep
 
     env = model.get_env()
     all_rewards = []
+    d_mu_vals = []
+    a_mu_vals = []
+    disadvantaged_acceptances = []
+    advantaged_acceptances = []
+    thresholds = []
+
     for i in range(num_episodes):
         print("Episode " + str(i + 1))
         episode_rewards = []
@@ -65,17 +68,45 @@ def evaluate(model, num_episodes, episode_timesteps):
         while not done:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            curr_timestep +=1 
+            curr_timestep +=1
+
+            # access information
+            # if on advantaged student
+            if (curr_timestep % 2 == 1):
+                advantaged_acceptances.append(info[0]["num_advantaged_accepted"])
+                a_mu_vals.append(info[0]['a_mu'])
+            else:
+                disadvantaged_acceptances.append(info[0]["num_disadvantaged_accepted"])
+                d_mu_vals.append(info[0]['d_mu'])
+            # regardless, append threshold into threshold
+            thresholds.append(info[0]['threshold'])
+
+            # append episode reward
+            episode_rewards.append(reward)
+            # if on last episode 
             if (curr_timestep == episode_timesteps):
                 break
-            episode_rewards.append(reward)
 
         all_rewards.append(sum(episode_rewards))
 
-    for x in all_rewards:
-        print(x)
-    mean_ep_reward = np.mean(all_rewards)
-    # plot the rewards, delta for fairness using tensorboard writer scalar
+    total_group_applications = int(num_episodes * episode_timesteps / 2)
+
+    disadvantaged_acceptances = np.array(disadvantaged_acceptances)
+    advantaged_acceptances = np.array(advantaged_acceptances)
+
+    # Plot Fairness metric
+    fairness_constant = disadvantaged_acceptances - advantaged_acceptances
+
+    for i in range(total_group_applications):
+        writer.add_scalar('Delta', fairness_constant[i], i)
+        writer.add_scalar('A_mu over Time', a_mu_vals[i], i)
+        writer.add_scalar('D_mu over Time', d_mu_vals[i], i)
+
+    # Plot thresholds
+    for i in range(len(thresholds)):
+        writer.add_scalar('Threshold over Time', thresholds[i], i)
+
+    writer.close()
 
 
 def main():
@@ -84,10 +115,14 @@ def main():
 
     check_env(env, warn=True)
 
+    # # check if runs exists if so, clear it to start new run
+    # if os.path.isdir('./runs'):
+    #     shutil.rmtree('./runs/')
+
     print("############################## Training PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)
 
-    
+
     print("############################## Evaluating PPO ##############################")
     evaluate(model, NUM_EPISODES, EPISODE_TIMESTEPS)
 

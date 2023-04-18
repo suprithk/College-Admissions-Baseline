@@ -2,10 +2,9 @@ import gym
 import numpy as np
 from students import *
 
+from config import *
 import main
-NUM_STEPS = 10_000 # unused
 
-EP_LENGTH = 1000
 
 class CollegeEnv(gym.Env):
  
@@ -35,6 +34,9 @@ class CollegeEnv(gym.Env):
         # action is accepting or rejecting the student application
         self.action_space = gym.spaces.Discrete(2)
 
+        self.num_disadvantaged_accepted = 0
+        self.num_advantaged_accepted = 0
+
     def reset(self):
         # Reset the environment and give obs an advantaged applicant
         initialThreshold = .8
@@ -53,15 +55,50 @@ class CollegeEnv(gym.Env):
         # Initialize previous observation
         self.prev_obs = obs
 
+        self.num_disadvantaged_accepted = 0
+        self.num_advantaged_accepted = 0
+
         # Return the initial Observation
         return obs
 
     def step(self, action):
         # increment timestep
         self.current_step += 1
-
-        # Get new obs
+        # Get new threshold
         threshold = self.threshold(action)
+
+        info = {}
+
+        # Add threshold to info
+        info['threshold'] = threshold
+
+        # Increase or decrease income mu
+        # If disadvantaged student
+        if (self.prev_obs['label'] == 0):
+            # If rejected
+            if (action == 0):
+                decrease_d_mu()
+            else:
+                self.num_disadvantaged_accepted += 1
+                increase_d_mu()
+            
+            # put new d_mu into info
+            info['d_mu'] = get_d_mu()
+            info['num_disadvantaged_accepted'] = self.num_disadvantaged_accepted
+        # If advantaged student
+        else:
+            # If rejected
+            if (action == 0):
+                decrease_a_mu()
+            else:
+                self.num_advantaged_accepted += 1
+                increase_a_mu()
+            
+            # put new a_mu into info
+            info['a_mu'] = get_a_mu()
+            info['num_advantaged_accepted'] = self.num_advantaged_accepted
+
+        # Get new observation
         if (self.prev_obs['label'] == 0):
             income_temp = advantaged_income()
             obs = {
@@ -79,14 +116,14 @@ class CollegeEnv(gym.Env):
             'threshold' : np.array(threshold, dtype=np.float32)
             }
 
+
         reward = float(self.get_reward(action, obs))
 
-        if (self.current_step == EP_LENGTH):
+        if (self.current_step == EPISODE_TIMESTEPS):
             done = True
         else:
             done = False 
 
-        info = {}  # optional info
         self.prev_obs = obs # update prev_obs
         
         return obs, reward, done, info

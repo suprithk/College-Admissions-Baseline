@@ -4,7 +4,9 @@ from scipy.stats import norm
 from scipy.stats import truncnorm
 import numpy as np
 
+global d_mu
 d_mu = 50_000
+global a_mu
 a_mu = 150_000
 # This file includes 3 core distribution used in the sampling
 # of students. 
@@ -15,8 +17,9 @@ a_mu = 150_000
 
 # Create a Gaussian distribution for Disadvantaged student family incomes
 def disadvantaged_income():
+  global d_mu
   D_sigma = 10_000
-  min, max = 0, 10_000_000
+  min, max = 1, 10_000_000
   D_gaussian = truncnorm((min - d_mu) / D_sigma, (max - d_mu) / D_sigma, 
                          loc=d_mu, scale=D_sigma)
   # Generate a single data point
@@ -25,8 +28,9 @@ def disadvantaged_income():
 
 # Create a Gaussian distribution for Advantaged student family incomes
 def advantaged_income():
+  global a_mu
   A_sigma = 10_000
-  min, max = 0, 10_000_000
+  min, max = 1, 10_000_000
   A_gaussian = truncnorm((min - a_mu) / A_sigma, (max - a_mu) / A_sigma, 
                          loc=a_mu, scale=A_sigma)
   # Generate a single data point
@@ -46,20 +50,40 @@ def sample_gpa():
 # Functions to decrease or increase d_mu
 def decrease_d_mu():
   global d_mu
-  d_mu = d_mu * .95
+  if (d_mu <= 10_000):
+    d_mu = 10_000
+    return
+  d_mu = d_mu  - 1_000
 
 def increase_d_mu():
   global d_mu
-  d_mu = d_mu * 1.05
+  if (d_mu >= 10_000_000):
+    d_mu = 10_000_000
+    return
+  d_mu = d_mu + 1_000
 
 # Functions to decrease or increase a_mu
 def decrease_a_mu():
   global a_mu
-  a_mu = a_mu * .95
+  if (a_mu <= 10_000):
+    a_mu = 10_000
+    return
+  a_mu = a_mu - 1_000
 
 def increase_a_mu():
   global a_mu
-  a_mu = a_mu * 1.05
+  if (a_mu >= 10_000_000):
+    a_mu = 10_000_000
+    return
+  a_mu = a_mu + 1_000
+
+def get_d_mu():
+  global d_mu
+  return d_mu
+
+def get_a_mu():
+  global a_mu
+  return a_mu
 
 def get_manipulated_gpa(income, threshold):
     
