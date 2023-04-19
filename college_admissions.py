@@ -1,7 +1,7 @@
 import gym
 import numpy as np
-from students import *
 
+from students import *
 from config import *
 import main
 
@@ -39,7 +39,7 @@ class CollegeEnv(gym.Env):
 
     def reset(self):
         # Reset the environment and give obs an advantaged applicant
-        initialThreshold = .8
+        initialThreshold = .1
         temp_income = advantaged_income()
 
         obs = {
@@ -57,6 +57,12 @@ class CollegeEnv(gym.Env):
 
         self.num_disadvantaged_accepted = 0
         self.num_advantaged_accepted = 0
+
+        # Set environment variables back as well
+        global d_mu
+        d_mu = initial_d_mu
+        global a_mu
+        a_mu = initial_a_mu
 
         # Return the initial Observation
         return obs
@@ -131,11 +137,28 @@ class CollegeEnv(gym.Env):
     def get_reward(self, action, obs):
         # 1: acceptance -> return the threshold + inc/dec
         # 0: rejection -> do nothing 
-        if (action != 0):
-            diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
-            return obs['threshold'] + (diff * obs['threshold'])
+        diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold if acceptance
+
+        # if we should not accept (greedily)
+        if (diff <= 0):
+            # if accept, punish, otherwise reward
+            if (action != 0):
+                return -1
+            else:
+                return 1
+        # if we should accept
         else:
-            return 0
+            # if accept, reward, otherwise punish
+            if (action != 0):
+                return 1
+            else:
+                return -1
+
+        # if (action != 0):
+        #     diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
+        #     return obs['threshold'] + (diff * 10) # really want to increase threshold
+        # else:
+        #     return 0
 
     def threshold(self, action):
         # return the average attendee score

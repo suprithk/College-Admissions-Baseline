@@ -1,7 +1,7 @@
 # TO DO
 # 4. Finally, tweek environment (change reward, fairness metric, etc)
-# Tweek get manipulated_gpa to make it harder for low income to increase gpa
-# Tweek reward to really emphasize higher threshold
+# Tweek reward: Currently,the agent is mostly rejecting everyone
+# We got to make it so that it values it threshold heavily but also wants to accept people
 
 
 
@@ -65,7 +65,7 @@ def evaluate(model, num_episodes, episode_timesteps):
         done = False
         obs = env.reset()
         curr_timestep = 0
-        while not done:
+        while True:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
             curr_timestep +=1
@@ -89,7 +89,7 @@ def evaluate(model, num_episodes, episode_timesteps):
 
         all_rewards.append(sum(episode_rewards))
 
-    total_group_applications = int(num_episodes * episode_timesteps / 2)
+    total_group_applications = len(disadvantaged_acceptances)
 
     disadvantaged_acceptances = np.array(disadvantaged_acceptances)
     advantaged_acceptances = np.array(advantaged_acceptances)
@@ -106,6 +106,11 @@ def evaluate(model, num_episodes, episode_timesteps):
     for i in range(len(thresholds)):
         writer.add_scalar('Threshold over Time', thresholds[i], i)
 
+    # How many of each were accepted at end of episode
+    print("Given 1000 students of each")
+    print("advantaged students accepted: " + str(advantaged_acceptances[len(advantaged_acceptances) - 1]))
+    print("disadvantaged students accepted: " + str(disadvantaged_acceptances[len(disadvantaged_acceptances) - 1]))
+
     writer.close()
 
 
@@ -119,12 +124,13 @@ def main():
     # if os.path.isdir('./runs'):
     #     shutil.rmtree('./runs/')
 
+
     print("############################## Training PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)
 
 
     print("############################## Evaluating PPO ##############################")
-    evaluate(model, NUM_EPISODES, EPISODE_TIMESTEPS)
+    evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS)
 
     # print("############################## Evaluating PPO_5000t ##############################")
     # model = PPO.load('./models/ppo_model_5000_steps.zip', env=env)

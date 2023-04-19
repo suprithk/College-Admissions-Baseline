@@ -1,11 +1,23 @@
 # TRAIN CONSTANTS
-TRAIN_TIMESTEPS = 10_000
+TRAIN_TIMESTEPS = 20_000 # Eventually be 1_000_000
+EPISODE_TIMESTEPS = 1000 # Eventaully will be 25_000
 
 SAVE_FREQ = TRAIN_TIMESTEPS / 2
 SAVE_DIR = './models/'
 
-# EXP_DIR = './experiments/ppo/'
-
 # EVALUATE CONSTANTS
-NUM_EPISODES = 10
-EPISODE_TIMESTEPS = 1000
+NUM_EPISODES = 1      
+EVALUATE_EPISODE_TIMESTEPS = 2_000 # Eventually will be 25_000
+
+# ENVIRONMENT CONSTANTS
+initial_threshold = .8
+
+initial_d_mu = 50_000
+D_SIGMA = 10_000
+
+initial_a_mu = 150_000
+A_SIGMA = 10_000
+
+GPA_MU = .7
+GPA_SIGMA = .05
+
