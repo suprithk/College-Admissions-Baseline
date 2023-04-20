@@ -3,6 +3,9 @@
 # Tweek reward: Currently,the agent is mostly rejecting everyone
 # We got to make it so that it values it threshold heavily but also wants to accept people
 
+# Our environment is not getting reset when we do evaluate our incomes are not going back or our threshold
+
+# Do we need to have a delta function so that pocar can run?
 
 
 import numpy as np
@@ -68,6 +71,12 @@ def evaluate(model, num_episodes, episode_timesteps):
         while True:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
+            if (curr_timestep == 0):
+                print("threshold at timestep 0: " + str(info[0]['threshold']))
+                print("a_mu at timestep 0: " + str(info[0]['a_mu']))
+                # print("d_mu at timestep 0: " + str(info[0]['d_mu']))
+                print("num_advantaged_accepted: " + str(info[0]["num_advantaged_accepted"]))
+                # print("num_disadvantaged_accepted: " + str(info[0]["num_disadvantaged_accepted"]))
             curr_timestep +=1
 
             # access information
@@ -91,11 +100,12 @@ def evaluate(model, num_episodes, episode_timesteps):
 
     total_group_applications = len(disadvantaged_acceptances)
 
-    disadvantaged_acceptances = np.array(disadvantaged_acceptances)
-    advantaged_acceptances = np.array(advantaged_acceptances)
+    # add 1 to each to account for divide by zero
+    disadvantaged_acceptances = np.array(disadvantaged_acceptances) + 1
+    advantaged_acceptances = np.array(advantaged_acceptances) + 1
 
     # Plot Fairness metric
-    fairness_constant = disadvantaged_acceptances - advantaged_acceptances
+    fairness_constant = disadvantaged_acceptances / advantaged_acceptances
 
     for i in range(total_group_applications):
         writer.add_scalar('Delta', fairness_constant[i], i)
@@ -121,9 +131,8 @@ def main():
     check_env(env, warn=True)
 
     # # check if runs exists if so, clear it to start new run
-    # if os.path.isdir('./runs'):
+    # if os.path.isdir('./runs/'):
     #     shutil.rmtree('./runs/')
-
 
     print("############################## Training PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)

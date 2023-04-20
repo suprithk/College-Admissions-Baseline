@@ -6,10 +6,7 @@ import numpy as np
 
 from config import *
 
-global d_mu
-d_mu = initial_d_mu
-global a_mu
-a_mu = initial_a_mu
+
 # This file includes 3 core distribution used in the sampling
 # of students. 
 #   1. GPA gaussian distribution
@@ -18,8 +15,7 @@ a_mu = initial_a_mu
 
 
 # Create a Gaussian distribution for Disadvantaged student family incomes
-def disadvantaged_income():
-  global d_mu
+def disadvantaged_income(d_mu):
   D_sigma = D_SIGMA
   min, max = 1, 10_000_000
   D_gaussian = truncnorm((min - d_mu) / D_sigma, (max - d_mu) / D_sigma, 
@@ -29,8 +25,7 @@ def disadvantaged_income():
   return D_gaussian.rvs()
 
 # Create a Gaussian distribution for Advantaged student family incomes
-def advantaged_income():
-  global a_mu
+def advantaged_income(a_mu):
   A_sigma = A_SIGMA
   min, max = 1, 10_000_000
   A_gaussian = truncnorm((min - a_mu) / A_sigma, (max - a_mu) / A_sigma, 
@@ -50,42 +45,35 @@ def sample_gpa():
   return gpa_gaussian.rvs()
 
 # Functions to decrease or increase d_mu
-def decrease_d_mu():
-  global d_mu
+def decrease_d_mu(d_mu):
   if (d_mu <= 10_000):
     d_mu = 10_000
-    return
-  d_mu = d_mu * .95 
-
-def increase_d_mu():
-  global d_mu
-  if (d_mu >= 10_000_000):
-    d_mu = 10_000_000
-    return
-  d_mu = d_mu * 1.05 
-
-# Functions to decrease or increase a_mu
-def decrease_a_mu():
-  global a_mu
-  if (a_mu <= 10_000):
-    a_mu = 10_000
-    return
-  a_mu = a_mu * .95  
-
-def increase_a_mu():
-  global a_mu
-  if (a_mu >= 10_000_000):
-    a_mu = 10_000_000
-    return
-  a_mu = a_mu * 1.05 
-
-def get_d_mu():
-  global d_mu
+  else:
+    d_mu = d_mu - 1
   return d_mu
 
-def get_a_mu():
-  global a_mu
+def increase_d_mu(d_mu):
+  if (d_mu >= 10_000_000):
+    d_mu = 10_000_000
+  else:
+    d_mu = d_mu + 1
+  return d_mu
+
+# Functions to decrease or increase a_mu
+def decrease_a_mu(a_mu):
+  if (a_mu <= 10_000):
+    a_mu = 10_000
+  else:
+    a_mu = a_mu - 1
   return a_mu
+
+def increase_a_mu(a_mu):
+  if (a_mu >= 10_000_000):
+    a_mu = 10_000_000
+  else:
+    a_mu = a_mu + 1
+  return a_mu
+
 
 def get_manipulated_gpa(income, threshold):
     
