@@ -38,8 +38,8 @@ curr_timestep = 0
 
 def train(train_timesteps, env):
 
-    env = Monitor(env)
-    env = DummyVecEnv([lambda: env])
+    # env = Monitor(env)
+    # env = DummyVecEnv([lambda: env])
 
     model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
 
@@ -67,13 +67,14 @@ def evaluate(model, num_episodes, episode_timesteps):
         episode_rewards = []
         done = False
         obs = env.reset()
+        print("threshold at timestep 0: " + str(obs['threshold']))
         curr_timestep = 0
         while True:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
             if (curr_timestep == 0):
-                print("threshold at timestep 0: " + str(info[0]['threshold']))
-                print("a_mu at timestep 0: " + str(info[0]['a_mu']))
+                print("threshold at timestep 1: " + str(info[0]['threshold']))
+                print("a_mu at timestep 1: " + str(info[0]['a_mu']))
                 # print("d_mu at timestep 0: " + str(info[0]['d_mu']))
                 print("num_advantaged_accepted: " + str(info[0]["num_advantaged_accepted"]))
                 # print("num_disadvantaged_accepted: " + str(info[0]["num_disadvantaged_accepted"]))
@@ -104,7 +105,7 @@ def evaluate(model, num_episodes, episode_timesteps):
     disadvantaged_acceptances = np.array(disadvantaged_acceptances) + 1
     advantaged_acceptances = np.array(advantaged_acceptances) + 1
 
-    # Plot Fairness metric
+    # Plot Fairness metric CHANGE TO ABSOLUTE DIFFERENCE (close to 0 means fair) INCLUDE INCOME
     fairness_constant = disadvantaged_acceptances / advantaged_acceptances
 
     for i in range(total_group_applications):
@@ -125,7 +126,6 @@ def evaluate(model, num_episodes, episode_timesteps):
 
 
 def main():
-    print("LESS GOOO")
     env = CollegeEnv()
 
     check_env(env, warn=True)
@@ -142,7 +142,7 @@ def main():
     evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS)
 
     # print("############################## Evaluating PPO_5000t ##############################")
-    # model = PPO.load('./models/ppo_model_5000_steps.zip', env=env)
+    # model = PPO.load('./models/ppo_model_150000_steps.zip', env=env)
     # evaluate(model, NUM_EPISODES, EPISODE_TIMESTEPS)
 
 

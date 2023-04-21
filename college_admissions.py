@@ -4,15 +4,11 @@ import numpy as np
 from students import *
 from config import *
 import main
+from copy import deepcopy
 
 
 class CollegeEnv(gym.Env):
  
-    # global scores_sum
-    # scores_sum = 0
-
-    # global student_count
-    # student_count = 0
 
     def __init__(self):
         self.observation_space = gym.spaces.Dict({
@@ -59,7 +55,7 @@ class CollegeEnv(gym.Env):
         self.current_step = 0
 
         # Initialize previous observation
-        self.prev_obs = obs              # deep copy ?
+        self.prev_obs = deepcopy(obs)
 
         self.num_disadvantaged_accepted = 0
         self.num_advantaged_accepted = 0
@@ -67,7 +63,7 @@ class CollegeEnv(gym.Env):
         self.scores_sum = 0
         self.student_count = 0
 
-        # Set environment variables back as well      these are not gettin set back to original
+        # Set environment variables back as well
         self.a_mu = 200_000
         self.d_mu = 50_000
 
@@ -137,31 +133,45 @@ class CollegeEnv(gym.Env):
         else:
             done = False 
 
-        self.prev_obs = obs # update prev_obs        deep copy???
+        self.prev_obs = deepcopy(obs) # update prev_obs
         
         return obs, reward, done, info
 
+
+# Fix this so that the agent tries to maximize threshold
     def get_reward(self, action, obs):
         # 1: acceptance -> return the threshold + inc/dec
         # 0: rejection -> do nothing 
-        diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold if acceptance
 
+        # Is the applicant above or below threshold
+        # diff = self.prev_obs['gpa'] - self.prev_obs['threshold']
 
-        # return obs['threshold']
-        # if we should not accept (greedily)
-        if (diff <= 0):
-            # if accept, punish, otherwise reward
-            if (action != 0):
-                return -.1
+        if self.prev_obs["label"] == 0:
+            if action != 0:
+                return 0
             else:
-                return .1
-        # if we should accept
+                return 1
         else:
-            # if accept, reward, otherwise punish
-            if (action != 0):
-                return obs['threshold']
+            if action != 0:
+                return 1
             else:
-                return -.1
+                return 0
+
+        # # return obs['threshold']
+        # # if we should not accept (greedily)
+        # if (diff <= 0):
+        #     # if accept, punish, otherwise reward
+        #     if (action != 0):
+        #         return -1
+        #     else:
+        #         return 5
+        # # if we should accept
+        # else:
+        #     # if accept, reward, otherwise punish
+        #     if (action != 0):
+        #         return  10 * obs['threshold']
+        #     else:
+        #         return - 5
 
         # if (action != 0):
         #     diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
@@ -179,9 +189,8 @@ class CollegeEnv(gym.Env):
         if (action == 0):
             return self.prev_obs['threshold']
         else:
-            self.scores_sum += self.prev_obs['gpa']
-            self.student_count += 1
-            return self.scores_sum/self.student_count
+            new_threshold = (self.prev_obs['gpa'] + 4 * (self.prev_obs['threshold'])) / 5
+            return new_threshold
 
     def render(self, mode='human'):
         pass

@@ -1,5 +1,5 @@
 # TRAIN CONSTANTS
-TRAIN_TIMESTEPS = 20_000 # Eventually be 1_000_000
+TRAIN_TIMESTEPS = 100_000 # Eventually be 1_000_000
 EPISODE_TIMESTEPS = 2000 # Eventaully will be 25_000
 
 SAVE_FREQ = TRAIN_TIMESTEPS / 2
@@ -10,14 +10,14 @@ NUM_EPISODES = 1
 EVALUATE_EPISODE_TIMESTEPS = EPISODE_TIMESTEPS # Eventually will be 25_000
 
 # ENVIRONMENT CONSTANTS
-initial_threshold = .6
+# initial_threshold = .6
 
-initial_d_mu = 50_000
+# initial_d_mu = 50_000
 D_SIGMA = 10_000
 
-initial_a_mu = 500_000
+# initial_a_mu = 500_000
 A_SIGMA = 10_000
 
-GPA_MU = .7
-GPA_SIGMA = .1
+GPA_MU = .6
+GPA_SIGMA = .05
 
