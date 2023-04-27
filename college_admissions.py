@@ -16,8 +16,6 @@ class CollegeEnv(gym.Env):
             'gpa' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32),
             # discrete label associated with advantage - 0,1
             'label' : gym.spaces.Discrete(2),
-            # income of each student ranging from 0 to 10 mil
-            'income' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([10_000_000], dtype=np.float32), shape=(1,), dtype=np.float32),
             # threshold for admission
             'threshold' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32)
         })
@@ -47,7 +45,6 @@ class CollegeEnv(gym.Env):
         obs = {
             'gpa' : np.array([get_manipulated_gpa(temp_income, initialThreshold)], dtype=np.float32),
             'label' : 1,
-            'income' : np.array([temp_income], dtype=np.float32),
             'threshold' : np.array([initialThreshold], dtype=np.float32)
         }
         # Reset ep_steps 
@@ -113,7 +110,6 @@ class CollegeEnv(gym.Env):
             obs = {
             'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
             'label' : 1,
-            'income' : np.array([income_temp], dtype=np.float32),
             'threshold' : np.array(threshold, dtype=np.float32)
             }
         else:
@@ -121,7 +117,6 @@ class CollegeEnv(gym.Env):
             obs = {
             'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
             'label' : 0,
-            'income' : np.array([income_temp], dtype=np.float32),
             'threshold' : np.array(threshold, dtype=np.float32)
             }
 

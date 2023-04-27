@@ -67,16 +67,16 @@ def evaluate(model, num_episodes, episode_timesteps):
         episode_rewards = []
         done = False
         obs = env.reset()
-        print("threshold at timestep 0: " + str(obs['threshold']))
+        # print("threshold at timestep 0: " + str(obs['threshold']))
         curr_timestep = 0
         while True:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            if (curr_timestep == 0):
-                print("threshold at timestep 1: " + str(info[0]['threshold']))
-                print("a_mu at timestep 1: " + str(info[0]['a_mu']))
-                # print("d_mu at timestep 0: " + str(info[0]['d_mu']))
-                print("num_advantaged_accepted: " + str(info[0]["num_advantaged_accepted"]))
+            # if (curr_timestep == 0):
+                # print("threshold at timestep 1: " + str(info[0]['threshold']))
+                # print("a_mu at timestep 1: " + str(info[0]['a_mu']))
+                # # print("d_mu at timestep 0: " + str(info[0]['d_mu']))
+                # print("num_advantaged_accepted: " + str(info[0]["num_advantaged_accepted"]))
                 # print("num_disadvantaged_accepted: " + str(info[0]["num_disadvantaged_accepted"]))
             curr_timestep +=1
 
@@ -104,14 +104,19 @@ def evaluate(model, num_episodes, episode_timesteps):
     # add 1 to each to account for divide by zero
     disadvantaged_acceptances = np.array(disadvantaged_acceptances) + 1
     advantaged_acceptances = np.array(advantaged_acceptances) + 1
+    a_mu_vals = np.array(a_mu_vals)
+    d_mu_vals = np.array(d_mu_vals)
 
     # Plot Fairness metric CHANGE TO ABSOLUTE DIFFERENCE (close to 0 means fair) INCLUDE INCOME
-    fairness_constant = disadvantaged_acceptances / advantaged_acceptances
+    fairness_constant = disadvantaged_acceptances / advantaged_acceptances - 1
+    # Should we also track income, only income, or both ?
+    income_gap = a_mu_vals - d_mu_vals
 
     for i in range(total_group_applications):
-        writer.add_scalar('Delta', fairness_constant[i], i)
+        writer.add_scalar('Delta Acceptances', fairness_constant[i], i)
         writer.add_scalar('A_mu over Time', a_mu_vals[i], i)
         writer.add_scalar('D_mu over Time', d_mu_vals[i], i)
+        writer.add_scalar('Delta Income', income_gap[i], i)
 
     # Plot thresholds
     for i in range(len(thresholds)):
