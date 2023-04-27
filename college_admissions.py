@@ -139,34 +139,31 @@ class CollegeEnv(gym.Env):
         # 0: rejection -> do nothing 
 
         # Is the applicant above or below threshold
-        # diff = self.prev_obs['gpa'] - self.prev_obs['threshold']
-
-        if self.prev_obs["label"] == 0:
-            if action != 0:
-                return 0
-            else:
-                return 1
-        else:
-            if action != 0:
-                return 1
-            else:
-                return 0
+        diff = self.prev_obs['gpa'] - self.prev_obs['threshold']
+        # if action != 0:
+        #     return 0
+        # else:
+        #     return 1
+        # if action != 0:
+        #         return 1
+        # else:
+        #         return 0
 
         # # return obs['threshold']
         # # if we should not accept (greedily)
-        # if (diff <= 0):
-        #     # if accept, punish, otherwise reward
-        #     if (action != 0):
-        #         return -1
-        #     else:
-        #         return 5
-        # # if we should accept
-        # else:
-        #     # if accept, reward, otherwise punish
-        #     if (action != 0):
-        #         return  10 * obs['threshold']
-        #     else:
-        #         return - 5
+        if (diff <= 0):
+            # if accept, punish, otherwise reward
+            if (action != 0):
+                return -5
+            else:
+                return 1
+        # if we should accept
+        else:
+            # if accept, reward, otherwise punish
+            if (action != 0):
+                return  obs['threshold'] + 2
+            else:
+                return -5
 
         # if (action != 0):
         #     diff = obs['threshold'] - self.prev_obs['threshold'] # change in threshold
@@ -184,7 +181,7 @@ class CollegeEnv(gym.Env):
         if (action == 0):
             return self.prev_obs['threshold']
         else:
-            new_threshold = (self.prev_obs['gpa'] + 4 * (self.prev_obs['threshold'])) / 5
+            new_threshold = (self.prev_obs['gpa'] + 9 * (self.prev_obs['threshold'])) / 10
             return new_threshold
 
     def render(self, mode='human'):
