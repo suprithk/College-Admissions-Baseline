@@ -31,6 +31,7 @@ writer = SummaryWriter()
 from config import *
 from college_admissions import *
 from students import *
+from ppo_wrapper_env import *
 
 
 global curr_timestep
@@ -61,6 +62,7 @@ def evaluate(model, num_episodes, episode_timesteps):
     disadvantaged_acceptances = []
     advantaged_acceptances = []
     thresholds = []
+    delta_incomes = []
 
     for i in range(num_episodes):
         print("Episode " + str(i + 1))
@@ -72,12 +74,7 @@ def evaluate(model, num_episodes, episode_timesteps):
         while True:
             action, _states = model.predict(obs)
             obs, reward, done, info = env.step(action)
-            # if (curr_timestep == 0):
-                # print("threshold at timestep 1: " + str(info[0]['threshold']))
-                # print("a_mu at timestep 1: " + str(info[0]['a_mu']))
-                # # print("d_mu at timestep 0: " + str(info[0]['d_mu']))
-                # print("num_advantaged_accepted: " + str(info[0]["num_advantaged_accepted"]))
-                # print("num_disadvantaged_accepted: " + str(info[0]["num_disadvantaged_accepted"]))
+            
             curr_timestep +=1
 
             # access information
@@ -90,6 +87,7 @@ def evaluate(model, num_episodes, episode_timesteps):
                 d_mu_vals.append(info[0]['d_mu'])
             # regardless, append threshold into threshold
             thresholds.append(info[0]['threshold'])
+            delta_incomes.append(info[0]['delta_income'])
 
             # append episode reward
             episode_rewards.append(reward)
@@ -116,11 +114,12 @@ def evaluate(model, num_episodes, episode_timesteps):
         writer.add_scalar('Delta Acceptances', fairness_constant[i], i)
         writer.add_scalar('A_mu over Time', a_mu_vals[i], i)
         writer.add_scalar('D_mu over Time', d_mu_vals[i], i)
-        writer.add_scalar('Delta Income', income_gap[i], i)
+        # writer.add_scalar('Delta Income', income_gap[i], i)
 
     # Plot thresholds
     for i in range(len(thresholds)):
         writer.add_scalar('Threshold over Time', thresholds[i], i)
+        writer.add_scalar('Delta Income over Time', delta_incomes[i], i)
 
     # How many of each were accepted at end of episode
     print("Given 1000 students of each")
@@ -132,6 +131,7 @@ def evaluate(model, num_episodes, episode_timesteps):
 
 def main():
     env = CollegeEnv()
+    env = PPOEnvWrapper(env)
 
     check_env(env, warn=True)
 

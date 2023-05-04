@@ -7,10 +7,12 @@ import main
 from copy import deepcopy
 
 
-class CollegeEnv(gym.Env):
+class PPOEnvWrapper(gym.Wrapper):
  
 
-    def __init__(self):
+    def __init__(self, env):
+        super(PPOEnvWrapper, self).__init__(env)
+
         self.observation_space = gym.spaces.Dict({
             # continuous score from 0 to 1
             'gpa' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32),
@@ -36,6 +38,8 @@ class CollegeEnv(gym.Env):
 
         self.a_mu = 200_000
         self.d_mu = 50_000
+
+        self.delta_income = self.a_mu - self.d_mu
 
     def reset(self):
         # Reset the environment and give obs an advantaged applicant
@@ -63,6 +67,8 @@ class CollegeEnv(gym.Env):
         # Set environment variables back as well
         self.a_mu = 200_000
         self.d_mu = 50_000
+
+        self.delta_income = self.a_mu - self.d_mu
 
         # Return the initial Observation
         return obs
@@ -129,6 +135,10 @@ class CollegeEnv(gym.Env):
             done = False 
 
         self.prev_obs = deepcopy(obs) # update prev_obs
+
+        # Calculate delta 
+        self.delta_income = self.a_mu - self.d_mu
+        info['delta_income'] = self.delta_income
         
         return obs, reward, done, info
 
