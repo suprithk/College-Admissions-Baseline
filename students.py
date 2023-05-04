@@ -49,14 +49,14 @@ def decrease_d_mu(d_mu):
   if (d_mu <= 10_000):
     d_mu = 10_000
   else:
-    d_mu = d_mu - 1
+    d_mu = d_mu * .999
   return d_mu
 
 def increase_d_mu(d_mu):
   if (d_mu >= 10_000_000):
     d_mu = 10_000_000
   else:
-    d_mu = d_mu + 1
+    d_mu = d_mu * 1.003
   return d_mu
 
 # Functions to decrease or increase a_mu
@@ -64,14 +64,14 @@ def decrease_a_mu(a_mu):
   if (a_mu <= 10_000):
     a_mu = 10_000
   else:
-    a_mu = a_mu - 1
+    a_mu = a_mu * .999
   return a_mu
 
 def increase_a_mu(a_mu):
   if (a_mu >= 10_000_000):
     a_mu = 10_000_000
   else:
-    a_mu = a_mu + 1
+    a_mu = a_mu * 1.003
   return a_mu
 
 
