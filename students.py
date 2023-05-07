@@ -56,7 +56,7 @@ def increase_d_mu(d_mu):
   if (d_mu >= 10_000_000):
     d_mu = 10_000_000
   else:
-    d_mu = d_mu * 1.003
+    d_mu = d_mu * 1.001
   return d_mu
 
 # Functions to decrease or increase a_mu
@@ -71,7 +71,7 @@ def increase_a_mu(a_mu):
   if (a_mu >= 10_000_000):
     a_mu = 10_000_000
   else:
-    a_mu = a_mu * 1.003
+    a_mu = a_mu * 1.001
   return a_mu
 
 
@@ -82,7 +82,7 @@ def get_manipulated_gpa(income, threshold):
     if income <= 75_000:
       return unmanipulated_gpa
     
-    gpa_increase = .05 * np.log2((income - 25_000)/50_000) # income to gpa increase function
+    gpa_increase = .08 * np.log2((income)/50_000) # income to gpa increase function
     manipulated_gpa = unmanipulated_gpa + gpa_increase
 
     if (manipulated_gpa >= threshold):

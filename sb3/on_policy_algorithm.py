@@ -15,7 +15,7 @@ from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedul
 from stable_baselines3.common.utils import obs_as_tensor, safe_mean
 from stable_baselines3.common.vec_env import VecEnv
 
-from buffers import RolloutBuffer
+from sb3.buffers import RolloutBuffer
 
 
 class OnPolicyAlgorithm(BaseAlgorithm):

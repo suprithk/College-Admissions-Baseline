@@ -39,7 +39,8 @@ class PPOEnvWrapper(gym.Wrapper):
         self.a_mu = 200_000
         self.d_mu = 50_000
 
-        self.delta_income = self.a_mu - self.d_mu
+        self.delta = 0
+        self.delta_delta = 0
 
     def reset(self):
         # Reset the environment and give obs an advantaged applicant
@@ -68,7 +69,8 @@ class PPOEnvWrapper(gym.Wrapper):
         self.a_mu = 200_000
         self.d_mu = 50_000
 
-        self.delta_income = self.a_mu - self.d_mu
+        self.delta = 0
+        self.delta_delta = 0
 
         # Return the initial Observation
         return obs
@@ -76,6 +78,10 @@ class PPOEnvWrapper(gym.Wrapper):
     def step(self, action):
         # increment timestep
         self.current_step += 1
+
+        # Save old delta
+        old_delta = (1 / 100_000) * (self.a_mu - self.d_mu)
+
         # Get new threshold
         threshold = self.threshold(action)
 
@@ -134,12 +140,13 @@ class PPOEnvWrapper(gym.Wrapper):
         else:
             done = False 
 
-        self.prev_obs = deepcopy(obs) # update prev_obs
+        # Calculate new delta 
+        new_delta = (1 / 100_000) * (self.a_mu - self.d_mu)
+        self.delta = new_delta
+        info['delta_income'] = self.delta
+        self.delta_delta = new_delta - old_delta
 
-        # Calculate delta 
-        self.delta_income = self.a_mu - self.d_mu
-        info['delta_income'] = self.delta_income
-        
+        self.prev_obs = deepcopy(obs) # update prev_obs
         return obs, reward, done, info
 
 

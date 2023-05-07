@@ -15,7 +15,7 @@ from stable_baselines3.common.preprocessing import get_action_dim, get_obs_shape
 # )
 from stable_baselines3.common.vec_env import VecNormalize
 
-from attention_allocation_experiment.agents.ppo.sb3.type_aliases import ReplayBufferSamples, RolloutBufferSamples, \
+from sb3.type_aliases import ReplayBufferSamples, RolloutBufferSamples, \
     DictReplayBufferSamples, DictRolloutBufferSamples
 
 try:

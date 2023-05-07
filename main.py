@@ -1,13 +1,3 @@
-# TO DO
-# 4. Finally, tweek environment (change reward, fairness metric, etc)
-# Tweek reward: Currently,the agent is mostly rejecting everyone
-# We got to make it so that it values it threshold heavily but also wants to accept people
-
-# Our environment is not getting reset when we do evaluate our incomes are not going back or our threshold
-
-# Do we need to have a delta function so that pocar can run?
-
-
 import numpy as np
 import torch
 import os
@@ -17,6 +7,7 @@ import os
 import sys
 import shutil
 
+# from sb3.ppo import PPO
 from stable_baselines3 import PPO
 from stable_baselines3.ppo.policies import MlpPolicy
 from stable_baselines3.common.env_checker import check_env
@@ -32,15 +23,17 @@ from config import *
 from college_admissions import *
 from students import *
 from ppo_wrapper_env import *
+from graphing.plot_a_mu_over_time import *
+from graphing.plot_d_mu_over_time import *
+from graphing.plot_delta_over_time import *
+from graphing.plot_reward_over_time import *
+from graphing.plot_threshold_over_time import *
 
 
 global curr_timestep
 curr_timestep = 0
 
 def train(train_timesteps, env):
-
-    # env = Monitor(env)
-    # env = DummyVecEnv([lambda: env])
 
     model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
 
@@ -56,7 +49,6 @@ def evaluate(model, num_episodes, episode_timesteps):
     global curr_timestep
 
     env = model.get_env()
-    all_rewards = []
     d_mu_vals = []
     a_mu_vals = []
     disadvantaged_acceptances = []
@@ -66,10 +58,8 @@ def evaluate(model, num_episodes, episode_timesteps):
 
     for i in range(num_episodes):
         print("Episode " + str(i + 1))
-        episode_rewards = []
         done = False
         obs = env.reset()
-        # print("threshold at timestep 0: " + str(obs['threshold']))
         curr_timestep = 0
         while True:
             action, _states = model.predict(obs)
@@ -89,37 +79,17 @@ def evaluate(model, num_episodes, episode_timesteps):
             thresholds.append(info[0]['threshold'])
             delta_incomes.append(info[0]['delta_income'])
 
-            # append episode reward
-            episode_rewards.append(reward)
             # if on last episode 
             if (curr_timestep == episode_timesteps):
                 break
 
-        all_rewards.append(sum(episode_rewards))
-
     total_group_applications = len(disadvantaged_acceptances)
 
     # add 1 to each to account for divide by zero
-    disadvantaged_acceptances = np.array(disadvantaged_acceptances) + 1
-    advantaged_acceptances = np.array(advantaged_acceptances) + 1
+    disadvantaged_acceptances = np.array(disadvantaged_acceptances) 
+    advantaged_acceptances = np.array(advantaged_acceptances)
     a_mu_vals = np.array(a_mu_vals)
     d_mu_vals = np.array(d_mu_vals)
-
-    # Plot Fairness metric CHANGE TO ABSOLUTE DIFFERENCE (close to 0 means fair) INCLUDE INCOME
-    fairness_constant = disadvantaged_acceptances / advantaged_acceptances - 1
-    # Should we also track income, only income, or both ?
-    income_gap = a_mu_vals - d_mu_vals
-
-    for i in range(total_group_applications):
-        writer.add_scalar('Delta Acceptances', fairness_constant[i], i)
-        writer.add_scalar('A_mu over Time', a_mu_vals[i], i)
-        writer.add_scalar('D_mu over Time', d_mu_vals[i], i)
-        # writer.add_scalar('Delta Income', income_gap[i], i)
-
-    # Plot thresholds
-    for i in range(len(thresholds)):
-        writer.add_scalar('Threshold over Time', thresholds[i], i)
-        writer.add_scalar('Delta Income over Time', delta_incomes[i], i)
 
     # How many of each were accepted at end of episode
     print("Given 1000 students of each")
@@ -127,6 +97,11 @@ def evaluate(model, num_episodes, episode_timesteps):
     print("disadvantaged students accepted: " + str(disadvantaged_acceptances[len(disadvantaged_acceptances) - 1]))
 
     writer.close()
+    plot_a_mu_over_time(a_mu_vals)
+    plot_d_mu_over_time(d_mu_vals)
+    plot_delta_over_time(delta_incomes)
+    # plot_reward_over_time(episode_rewards)
+    plot_threshold_over_time(thresholds)
 
 
 def main():
@@ -135,21 +110,12 @@ def main():
 
     check_env(env, warn=True)
 
-    # # check if runs exists if so, clear it to start new run
-    # if os.path.isdir('./runs/'):
-    #     shutil.rmtree('./runs/')
-
     print("############################## Training PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)
 
 
     print("############################## Evaluating PPO ##############################")
     evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS)
-
-    # print("############################## Evaluating PPO_5000t ##############################")
-    # model = PPO.load('./models/ppo_model_150000_steps.zip', env=env)
-    # evaluate(model, NUM_EPISODES, EPISODE_TIMESTEPS)
-
 
 if __name__ == "__main__":
     main()
