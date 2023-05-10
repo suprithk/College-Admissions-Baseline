@@ -7,8 +7,9 @@ import os
 import sys
 import shutil
 
-# from sb3.ppo import PPO
-from stable_baselines3 import PPO
+from sb3.ppo import PPO
+# from stable_baselines3 import PPO
+from stable_baselines3 import DQN
 from stable_baselines3.ppo.policies import MlpPolicy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.monitor import Monitor
@@ -35,7 +36,11 @@ curr_timestep = 0
 
 def train(train_timesteps, env):
 
-    model = PPO('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
+    env = Monitor(env)
+    env = DummyVecEnv([lambda: env])
+
+    model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./runs/")
+    # model = SAC('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
 
     checkpoint_callback = CheckpointCallback(save_freq=SAVE_FREQ, save_path=SAVE_DIR, name_prefix='ppo_model')
 

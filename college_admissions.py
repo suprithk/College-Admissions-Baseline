@@ -11,14 +11,20 @@ class CollegeEnv(gym.Env):
  
 
     def __init__(self):
-        self.observation_space = gym.spaces.Dict({
-            # continuous score from 0 to 1
-            'gpa' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32),
-            # discrete label associated with advantage - 0,1
-            'label' : gym.spaces.Discrete(2),
-            # threshold for admission
-            'threshold' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32)
-        })
+        # self.observation_space = gym.spaces.Dict({
+        #     # continuous score from 0 to 1
+        #     'gpa' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32),
+        #     # discrete label associated with advantage - 0,1
+        #     'label' : gym.spaces.Discrete(2),
+        #     # threshold for admission
+        #     'threshold' : gym.spaces.Box(low=np.array([0], dtype=np.float32), high=np.array([1], dtype=np.float32), shape=(1,), dtype=np.float32)
+        # })
+        self.observation_space = gym.spaces.Box(
+            low=0.0,
+            high=1.0,
+            shape=(3,),
+            dtype=np.float32
+        )
         self.done = False
         self.current_step = 0
 
@@ -27,6 +33,11 @@ class CollegeEnv(gym.Env):
 
         # action is accepting or rejecting the student application
         self.action_space = gym.spaces.Discrete(2)
+        # self.action_space = gym.spaces.Box(
+        #     low=-np.inf,
+        #     high=np.inf,
+        #     shape=(1,),
+        #     dtype=np.float32)
 
         self.num_disadvantaged_accepted = 0
         self.num_advantaged_accepted = 0
@@ -42,11 +53,12 @@ class CollegeEnv(gym.Env):
         initialThreshold = .6
         temp_income = advantaged_income(self.a_mu)
 
-        obs = {
-            'gpa' : np.array([get_manipulated_gpa(temp_income, initialThreshold)], dtype=np.float32),
-            'label' : 1,
-            'threshold' : np.array([initialThreshold], dtype=np.float32)
-        }
+        # obs = {
+        #     'gpa' : np.array([get_manipulated_gpa(temp_income, initialThreshold)], dtype=np.float32),
+        #     'label' : 1,
+        #     'threshold' : np.array([initialThreshold], dtype=np.float32)
+        # }
+        obs = np.array([get_manipulated_gpa(temp_income, initialThreshold), 1.0, initialThreshold], dtype=np.float32)
         # Reset ep_steps 
         self.done = False
         self.current_step = 0
@@ -70,6 +82,10 @@ class CollegeEnv(gym.Env):
     def step(self, action):
         # increment timestep
         self.current_step += 1
+
+        # Save old delta
+        old_delta = (1 / 100_000) * (self.a_mu - self.d_mu)
+
         # Get new threshold
         threshold = self.threshold(action)
 
@@ -80,7 +96,8 @@ class CollegeEnv(gym.Env):
 
         # Increase or decrease income mu
         # If disadvantaged student
-        if (self.prev_obs['label'] == 0):
+        # if (self.prev_obs['label'] == 0):
+        if (self.prev_obs[1] == 0):
             # If rejected
             if (action == 0):
                 self.d_mu = decrease_d_mu(self.d_mu)
@@ -105,20 +122,23 @@ class CollegeEnv(gym.Env):
             info['num_advantaged_accepted'] = self.num_advantaged_accepted
 
         # Get new observation
-        if (self.prev_obs['label'] == 0):
+        # if (self.prev_obs['label'] == 0):
+        if (self.prev_obs[1] == 0):
             income_temp = advantaged_income(self.a_mu)
-            obs = {
-            'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
-            'label' : 1,
-            'threshold' : np.array(threshold, dtype=np.float32)
-            }
+            # obs = {
+            # 'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
+            # 'label' : 1,
+            # 'threshold' : np.array(threshold, dtype=np.float32)
+            # }
+            obs = np.array([get_manipulated_gpa(income_temp, threshold), 1.0, threshold], dtype=np.float32)
         else:
             income_temp = disadvantaged_income(self.d_mu)
-            obs = {
-            'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
-            'label' : 0,
-            'threshold' : np.array(threshold, dtype=np.float32)
-            }
+            # obs = {
+            # 'gpa' : np.array([get_manipulated_gpa(income_temp, threshold)], dtype=np.float32),
+            # 'label' : 0,
+            # 'threshold' : np.array(threshold, dtype=np.float32)
+            # }
+            obs = np.array([get_manipulated_gpa(income_temp, threshold), 0.0, threshold], dtype=np.float32)
 
 
         reward = float(self.get_reward(action, obs))
@@ -128,8 +148,13 @@ class CollegeEnv(gym.Env):
         else:
             done = False 
 
+        # Calculate new delta 
+        new_delta = (1 / 100_000) * (self.a_mu - self.d_mu)
+        self.delta = new_delta
+        info['delta_income'] = self.delta
+        self.delta_delta = new_delta - old_delta
+
         self.prev_obs = deepcopy(obs) # update prev_obs
-        
         return obs, reward, done, info
 
 
@@ -139,7 +164,7 @@ class CollegeEnv(gym.Env):
         # 0: rejection -> do nothing 
 
         # Is the applicant above or below threshold
-        diff = self.prev_obs['gpa'] - self.prev_obs['threshold']
+        diff = self.prev_obs[0] - self.prev_obs[2]
 
         # # return obs['threshold']
         # # if we should not accept (greedily)
@@ -153,7 +178,7 @@ class CollegeEnv(gym.Env):
         else:
             # if accept, reward, otherwise punish
             if (action != 0):
-                return  obs['threshold'] + 2
+                return  obs[2] + 2
             else:
                 return -5
 
@@ -161,9 +186,9 @@ class CollegeEnv(gym.Env):
         # return the average attendee score
         # if we reject, do nothing, otherwise update threshold
         if (action == 0):
-            return self.prev_obs['threshold']
+            return self.prev_obs[2]
         else:
-            new_threshold = (self.prev_obs['gpa'] + 9 * (self.prev_obs['threshold'])) / 10
+            new_threshold = (self.prev_obs[0] + 9 * (self.prev_obs[2])) / 10
             return new_threshold
 
     def render(self, mode='human'):
