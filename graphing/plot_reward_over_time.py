@@ -2,12 +2,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 def plot_reward_over_time(reward_over_time):
-    plt.title(f'Reward Over Time')
-    plt.xlabel('Time')
-    plt.ylabel('Reward')
+    agent_names = list(reward_over_time.keys())
+    plt.title(f'Reward Over Time', fontsize = 28)
+    plt.xlabel('Time', fontsize = 20)
+    plt.ylabel('Reward', fontsize = 20)
 
-    i = range(len(reward_over_time))
-    plt.plot(i, reward_over_time, color="blue")
+    for agent in agent_names:
+        plt.plot(range(len(reward_over_time[agent])), reward_over_time[agent], linewidth = 4)
+    plt.legend(agent_names, fontsize='x-large')
 
     plt.show()
     plt.close()

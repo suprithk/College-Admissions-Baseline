@@ -1,6 +1,6 @@
 # TRAIN CONSTANTS
-TRAIN_TIMESTEPS = 50_000 # Eventually be 1_000_000
-EPISODE_TIMESTEPS = 2000 # Eventaully will be 25_000
+TRAIN_TIMESTEPS = 100_000 # Eventually be 1_000_000
+EPISODE_TIMESTEPS = 10_000 # Eventaully will be 25_000
 
 SAVE_FREQ = TRAIN_TIMESTEPS / 2
 SAVE_DIR = './models/'
@@ -24,8 +24,8 @@ GPA_SIGMA = .05
 REGULARIZE_ADVANTAGE = True  # Regularize advantage?
 # Weights for advantage, value-thresholding, and decrease-in-violation terms in Eq. 3 of the paper
 BETA_0 = 1
-BETA_1 = 0.15
-BETA_2 = 0.15
+BETA_1 = 0.325
+BETA_2 = 0.325
 
 # Threshold for delta
 OMEGA = 0.05

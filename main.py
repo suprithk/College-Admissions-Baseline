@@ -9,8 +9,6 @@ import shutil
 
 from sb3.ppo import PPO
 # from stable_baselines3 import PPO
-from stable_baselines3 import DQN
-from stable_baselines3.ppo.policies import MlpPolicy
 from stable_baselines3.common.env_checker import check_env
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
@@ -34,6 +32,14 @@ from graphing.plot_threshold_over_time import *
 global curr_timestep
 curr_timestep = 0
 
+global thresholds
+thresholds = {}
+global delta_incomes
+delta_incomes = {}
+global rewards
+rewards = {}
+
+
 def train(train_timesteps, env):
 
     env = Monitor(env)
@@ -42,7 +48,7 @@ def train(train_timesteps, env):
     model = PPO('MlpPolicy', env, verbose=1, tensorboard_log="./runs/")
     # model = SAC('MultiInputPolicy', env, verbose=1, tensorboard_log="./runs/")
 
-    checkpoint_callback = CheckpointCallback(save_freq=SAVE_FREQ, save_path=SAVE_DIR, name_prefix='ppo_model')
+    checkpoint_callback = CheckpointCallback(save_freq=SAVE_FREQ, save_path=SAVE_DIR, name_prefix='a-ppo_model')
 
     model.learn(train_timesteps, callback=checkpoint_callback, tb_log_name="first run")
     model.save(SAVE_DIR + '/final_model')
@@ -50,7 +56,7 @@ def train(train_timesteps, env):
 
 
 
-def evaluate(model, num_episodes, episode_timesteps):
+def evaluate(model, num_episodes, episode_timesteps, agent_name):
     global curr_timestep
 
     env = model.get_env()
@@ -58,8 +64,13 @@ def evaluate(model, num_episodes, episode_timesteps):
     a_mu_vals = []
     disadvantaged_acceptances = []
     advantaged_acceptances = []
-    thresholds = []
-    delta_incomes = []
+
+    global thresholds
+    global delta_incomes
+    global rewards
+    thresholds[agent_name] = []
+    delta_incomes[agent_name] = []
+    rewards[agent_name] = []
 
     for i in range(num_episodes):
         print("Episode " + str(i + 1))
@@ -80,9 +91,10 @@ def evaluate(model, num_episodes, episode_timesteps):
             else:
                 disadvantaged_acceptances.append(info[0]["num_disadvantaged_accepted"])
                 d_mu_vals.append(info[0]['d_mu'])
-            # regardless, append threshold into threshold
-            thresholds.append(info[0]['threshold'])
-            delta_incomes.append(info[0]['delta_income'])
+            # regardless, append threshold, delta, and reward
+            thresholds[agent_name].append(info[0]['threshold'])
+            delta_incomes[agent_name].append(info[0]['delta_income'])
+            rewards[agent_name].append(reward)
 
             # if on last episode 
             if (curr_timestep == episode_timesteps):
@@ -104,9 +116,6 @@ def evaluate(model, num_episodes, episode_timesteps):
     writer.close()
     plot_a_mu_over_time(a_mu_vals)
     plot_d_mu_over_time(d_mu_vals)
-    plot_delta_over_time(delta_incomes)
-    # plot_reward_over_time(episode_rewards)
-    plot_threshold_over_time(thresholds)
 
 
 def main():
@@ -115,12 +124,19 @@ def main():
 
     check_env(env, warn=True)
 
-    print("############################## Training PPO ##############################")
+    print("############################## Training G-PPO ##############################")
     model = train(TRAIN_TIMESTEPS, env)
 
+    print("############################## Evaluating G-PPO ##############################")
+    evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS, "G-PPO")
 
-    print("############################## Evaluating PPO ##############################")
-    evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS)
+    # print("############################## Evaluating A-PPO ##############################")
+    # model = PPO.load('./models/a-ppo_model_100000_steps.zip', env = env)
+    # evaluate(model, NUM_EPISODES, EVALUATE_EPISODE_TIMESTEPS, "A-PPO")
+
+    # plot_delta_over_time(delta_incomes)
+    # plot_reward_over_time(rewards)
+    # plot_threshold_over_time(thresholds)
 
 if __name__ == "__main__":
     main()

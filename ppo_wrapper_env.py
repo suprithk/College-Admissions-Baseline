@@ -179,7 +179,7 @@ class PPOEnvWrapper(gym.Wrapper):
         if (diff <= 0):
             # if accept, punish, otherwise reward
             if (action != 0):
-                return -5
+                return -1
             else:
                 return 1
         # if we should accept
@@ -187,9 +187,9 @@ class PPOEnvWrapper(gym.Wrapper):
             # if accept, reward, otherwise punish
             if (action != 0):
                 # return  obs['threshold'] + 2
-                return obs[2] + 2
+                return 2 * obs[2]
             else:
-                return -5
+                return -1
 
     def threshold(self, action):
         # return the average attendee score
