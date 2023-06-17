@@ -20,7 +20,7 @@ Navigate to the directory where `main.py` is located and then run the following:
 python main.py
 ```
 
-This will train two agents - [A-PPO and G-PPO](https://github.com/ericyangyu/pocar) and evaluate their fairness and utility performance in our environment, outputting graphs.
+This will train two agents - [A-PPO and G-PPO](https://github.com/ericyangyu/pocar) and evaluate their fairness and utility performance in our environment, outputting graphs. Follow this [tutorial](https://github.com/araffin/rl-tutorial-jnrr19/tree/sb3/) for adding/running more RL decision-making models.
 
 Can change training time or episode length in `config.py`
 
