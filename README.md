@@ -24,4 +24,4 @@ This will train two agents - [A-PPO and G-PPO](https://github.com/ericyangyu/poc
 
 Can change training time or episode length in `config.py`
 
-Look at `College_Admissions_MDP_Cycle.png` for a visualization of how the environment works.
+`College_Admissions_MDP_Cycle.png` provides a visualization of how the environment works.
